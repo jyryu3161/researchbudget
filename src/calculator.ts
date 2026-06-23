@@ -76,7 +76,7 @@ export function rowAmount(row: PersonnelRow): number {
 export function newYear(name: string, overrides: Partial<BudgetYear> = {}): BudgetYear {
   return {
     name,
-    totalRaw: '',
+    totalRaw: '100000',
     rateRaw: '',
     allowanceRateRaw: '',
     vat: false,

@@ -16,11 +16,11 @@ describe('budget calculator', () => {
       vat: false,
       basis: 'direct',
       internal: [
-        { id: 1, name: '이찬희', base: '800', months: '9', counted: true },
-        { id: 2, name: '류재용', base: '2400', months: '9', counted: false },
+        { id: 1, name: '내부연구원A', base: '800', months: '9', counted: true },
+        { id: 2, name: '내부연구원B', base: '2400', months: '9', counted: false },
       ],
       external: [],
-      student: [{ id: 3, name: '홍길동', base: '2000', months: '9' }],
+      student: [{ id: 3, name: '학생연구원A', base: '2000', months: '9' }],
       activityRaw: '15000',
       materialRaw: '10000',
     });
