@@ -36,6 +36,10 @@ h2 { margin: 0; font-size: 17px; font-weight: 800; }
 .segment button, .toggle button, .mini button { border-radius: 5px; padding: 7px 12px; font-size: 12.5px; font-weight: 700; border: 1.5px solid #ddd; background: #fff; color: #9a978f; }
 .segment button.on, .toggle button.on, .mini button.on { border-color: #1f6b3e; background: #e9f3ec; color: #1f6b3e; }
 .preset-row { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.allocation-box { margin-top: 18px; background: #fbfaf6; border: 1px solid #eceae3; border-radius: 8px; padding: 16px; display: grid; grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(110px, 1fr)); gap: 14px; align-items: center; }
+.allocation-box > div:first-child { display: flex; flex-direction: column; gap: 4px; }
+.allocation-box > div:first-child span { font-size: 13.5px; font-weight: 800; color: #4d4a43; }
+.allocation-box small { color: #8a877f; line-height: 1.45; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; min-width: 850px; }
 th { color: #8a877f; font-size: 12px; font-weight: 700; text-align: left; border-bottom: 1px solid #eceae3; padding: 8px 6px; }
@@ -60,4 +64,4 @@ td input, td select { width: 100%; border: 1px solid #ddd9cf; border-radius: 4px
 .balance button { border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.14); color: #fff; margin-top: 8px; }
 .grand { display: flex; align-items: center; justify-content: space-between; gap: 22px; flex-wrap: wrap; background: #fbfaf6; }
 .grand span, .footnote { color: #a8a59e; font-size: 13px; }
-@media (max-width: 840px) { .grid.three, .grid.two, .summary, .summary-grid { grid-template-columns: 1fr; } .card { padding: 20px; } .page { padding: 28px 16px 56px; } }
+@media (max-width: 840px) { .grid.three, .grid.two, .summary, .summary-grid, .allocation-box { grid-template-columns: 1fr; } .card { padding: 20px; } .page { padding: 28px 16px 56px; } }

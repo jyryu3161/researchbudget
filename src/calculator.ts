@@ -24,6 +24,13 @@ export interface BudgetYear {
   materialRaw: string;
 }
 
+export interface BudgetAllocation {
+  direct: number;
+  indirect: number;
+  vatAmt: number;
+  required: number;
+}
+
 export interface ComputedBudget {
   intCounted: number;
   intAll: number;
@@ -40,6 +47,9 @@ export interface ComputedBudget {
   required: number;
   total: number;
   diff: number;
+  targetDirect: number;
+  targetIndirect: number;
+  targetVatAmt: number;
 }
 
 export const positions: Record<string, number> = {
@@ -90,6 +100,25 @@ export function newYear(name: string, overrides: Partial<BudgetYear> = {}): Budg
   };
 }
 
+export function allocateTotalBudget(y: BudgetYear): BudgetAllocation {
+  const total = Math.round(parseNum(y.totalRaw));
+  const r = parseNum(y.rateRaw) / 100;
+  if (total <= 0) return { direct: 0, indirect: 0, vatAmt: 0, required: 0 };
+
+  const net = y.vat ? Math.round(total / 1.1) : total;
+  const vatAmt = y.vat ? total - net : 0;
+  let direct: number;
+  let indirect: number;
+  if (y.basis === 'direct') {
+    direct = r > -1 ? Math.round(net / (1 + r)) : net;
+    indirect = net - direct;
+  } else {
+    indirect = Math.round(net * r);
+    direct = net - indirect;
+  }
+  return { direct, indirect, vatAmt, required: total };
+}
+
 export function computeBudget(y: BudgetYear): ComputedBudget {
   const intCounted = y.internal.filter((row) => row.counted).reduce((a, b) => a + rowAmount(b), 0);
   const intAll = y.internal.reduce((a, b) => a + rowAmount(b), 0);
@@ -100,13 +129,22 @@ export function computeBudget(y: BudgetYear): ComputedBudget {
   const allowance = (personnelAll * parseNum(y.allowanceRateRaw)) / 100;
   const activity = parseNum(y.activityRaw);
   const material = parseNum(y.materialRaw);
-  const direct = personnelCounted + allowance + activity + material;
+  const rawDirect = personnelCounted + allowance + activity + material;
+  const direct = Math.round(rawDirect);
   const r = parseNum(y.rateRaw) / 100;
-  const indirect = y.basis === 'direct' ? direct * r : r < 1 ? (direct * r) / (1 - r) : 0;
-  const preVat = direct + indirect;
-  const vatAmt = y.vat ? preVat * 0.1 : 0;
-  const required = preVat + vatAmt;
-  const total = parseNum(y.totalRaw);
+  let indirect = Math.round(y.basis === 'direct' ? direct * r : r < 1 ? (direct * r) / (1 - r) : 0);
+  let preVat = direct + indirect;
+  let vatAmt = y.vat ? Math.round(preVat * 0.1) : 0;
+  let required = preVat + vatAmt;
+  const total = Math.round(parseNum(y.totalRaw));
+  const roundedGap = total - required;
+  if (total > 0 && Math.abs(roundedGap) <= 1) {
+    indirect += roundedGap;
+    preVat = direct + indirect;
+    vatAmt = y.vat ? total - preVat : 0;
+    required = total;
+  }
+  const target = allocateTotalBudget(y);
   return {
     intCounted,
     intAll,
@@ -123,18 +161,17 @@ export function computeBudget(y: BudgetYear): ComputedBudget {
     required,
     total,
     diff: total - required,
+    targetDirect: target.direct,
+    targetIndirect: target.indirect,
+    targetVatAmt: target.vatAmt,
   };
 }
 
 export function activityToBalance(y: BudgetYear): number {
   const c = computeBudget(y);
-  const total = c.total;
-  const r = parseNum(y.rateRaw) / 100;
-  const indirectMultiplier = y.basis === 'direct' ? 1 + r : r < 1 ? 1 / (1 - r) : 1;
-  const vatMultiplier = y.vat ? 1.1 : 1;
-  const targetDirect = total / (indirectMultiplier * vatMultiplier);
+  const target = allocateTotalBudget(y);
   const baseExclActivity = c.personnelCounted + c.allowance + c.material;
-  return Math.max(0, Math.round(targetDirect - baseExclActivity));
+  return Math.max(0, Math.round(target.direct - baseExclActivity));
 }
 
 export function grandTotals(years: BudgetYear[]) {

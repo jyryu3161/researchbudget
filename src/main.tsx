@@ -184,6 +184,15 @@ function App() {
           <div className="preset-row">
             {presets.map((preset) => <button key={preset.label} onClick={() => updateYear({ rateRaw: preset.rate, vat: preset.vat })}>{preset.label}</button>)}
           </div>
+          <div className="allocation-box">
+            <div>
+              <span>총연구비 기준 자동 배분</span>
+              <small>간접비율·부가세·계산기준을 입력하면 즉시 계산됩니다.</small>
+            </div>
+            <Stat label="직접비 한도" value={computed.targetDirect} />
+            <Stat label="간접비" value={computed.targetIndirect} />
+            {year.vat ? <Stat label="부가세" value={computed.targetVatAmt} /> : null}
+          </div>
         </section>
 
         <PeopleSection title="내부인건비" rows={year.internal} group="internal" onAdd={addRow} onRemove={removeRow} onMove={moveRow} onUpdate={updateRow} onPosition={setPosition} />

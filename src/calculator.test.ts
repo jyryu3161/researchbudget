@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activityToBalance, computeBudget, grandTotals, newYear, parseNum } from './calculator';
+import { activityToBalance, allocateTotalBudget, computeBudget, grandTotals, newYear, parseNum } from './calculator';
 
 describe('budget calculator', () => {
   it('parses numeric strings with commas and blanks safely', () => {
@@ -54,6 +54,17 @@ describe('budget calculator', () => {
     expect(Math.round(c.indirect)).toBe(17487);
     expect(Math.round(c.vatAmt)).toBe(7949);
     expect(Math.round(c.required)).toBe(87436);
+  });
+
+  it('allocates total budget into direct and indirect amounts without one-unit gaps', () => {
+    const year = newYear('1차년도', { totalRaw: '100000', rateRaw: '26.09', basis: 'direct' });
+    expect(allocateTotalBudget(year)).toEqual({ direct: 79308, indirect: 20692, vatAmt: 0, required: 100000 });
+
+    const balanced = computeBudget({ ...year, activityRaw: '79308' });
+    expect(balanced.direct).toBe(79308);
+    expect(balanced.indirect).toBe(20692);
+    expect(balanced.required).toBe(100000);
+    expect(balanced.diff).toBe(0);
   });
 
   it('computes activity budget needed to make the remaining balance zero', () => {
