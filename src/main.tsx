@@ -55,6 +55,14 @@ function App() {
     updateRows(group, year[group].filter((row) => row.id !== id));
   }
 
+  function duplicateRow(group: Group, id: number) {
+    const rows = year[group];
+    const index = rows.findIndex((row) => row.id === id);
+    if (index < 0) return;
+    const copy = { ...rows[index], id: ++uid };
+    updateRows(group, [...rows.slice(0, index + 1), copy, ...rows.slice(index + 1)]);
+  }
+
   function addRow(group: Group) {
     const row: PersonnelRow = { id: ++uid, name: '', base: '', months: '', counted: group === 'internal' };
     updateRows(group, [...year[group], row]);
@@ -195,9 +203,9 @@ function App() {
           </div>
         </section>
 
-        <PeopleSection title="내부인건비" rows={year.internal} group="internal" onAdd={addRow} onRemove={removeRow} onMove={moveRow} onUpdate={updateRow} onPosition={setPosition} />
-        <PeopleSection title="외부인건비" rows={year.external} group="external" onAdd={addRow} onRemove={removeRow} onMove={moveRow} onUpdate={updateRow} onPosition={setPosition} />
-        <PeopleSection title="학생인건비" rows={year.student} group="student" onAdd={addRow} onRemove={removeRow} onMove={moveRow} onUpdate={updateRow} onPosition={setPosition} />
+        <PeopleSection title="내부인건비" rows={year.internal} group="internal" onAdd={addRow} onDuplicate={duplicateRow} onRemove={removeRow} onMove={moveRow} onUpdate={updateRow} onPosition={setPosition} />
+        <PeopleSection title="외부인건비" rows={year.external} group="external" onAdd={addRow} onDuplicate={duplicateRow} onRemove={removeRow} onMove={moveRow} onUpdate={updateRow} onPosition={setPosition} />
+        <PeopleSection title="학생인건비" rows={year.student} group="student" onAdd={addRow} onDuplicate={duplicateRow} onRemove={removeRow} onMove={moveRow} onUpdate={updateRow} onPosition={setPosition} />
 
         <section className="card costs">
           <h2>직접비 항목</h2>
@@ -250,18 +258,19 @@ function Toggle({ label, options, value, onChange }: { label: string; options: [
   return <div className="toggle"><span>{label}</span><div>{options.map(([id, text]) => <button key={String(id)} className={id === value ? 'on' : ''} onClick={() => onChange(id)}>{text}</button>)}</div></div>;
 }
 
-function PeopleSection({ title, rows, group, onAdd, onRemove, onMove, onUpdate, onPosition }: {
+function PeopleSection({ title, rows, group, onAdd, onDuplicate, onRemove, onMove, onUpdate, onPosition }: {
   title: string;
   rows: PersonnelRow[];
   group: Group;
   onAdd: (group: Group) => void;
+  onDuplicate: (group: Group, id: number) => void;
   onRemove: (group: Group, id: number) => void;
   onMove: (group: Group, id: number, dir: -1 | 1) => void;
   onUpdate: (group: Group, id: number, patch: Partial<PersonnelRow>) => void;
   onPosition: (group: Group, id: number, pos: string) => void;
 }) {
   return <section className="card people"><div className="card-title"><h2>{title}</h2><button onClick={() => onAdd(group)}>+ 행 추가</button></div>
-    <div className="table-wrap"><table><thead><tr><th>이름</th><th>직위/과정</th><th>기준액(월)</th><th>참여개월</th>{group === 'internal' ? <th>계상구분</th> : null}<th>산출액</th><th>순서</th><th /></tr></thead><tbody>
+    <div className="table-wrap"><table><thead><tr><th>이름</th><th>직위/과정</th><th>기준액(월)</th><th>참여개월</th>{group === 'internal' ? <th>계상구분</th> : null}<th>산출액</th><th>순서</th><th>작업</th></tr></thead><tbody>
       {rows.length === 0 ? <tr><td className="empty" colSpan={group === 'internal' ? 8 : 7}>아직 입력된 항목이 없습니다.</td></tr> : rows.map((row) => <tr key={row.id}>
         <td><input value={row.name} onChange={(e) => onUpdate(group, row.id, { name: e.target.value })} placeholder="이름" /></td>
         <td><select value={row.pos || ''} onChange={(e) => onPosition(group, row.id, e.target.value)}><option value="">직접 입력</option>{Object.keys(positions).map((pos) => <option key={pos} value={pos}>{pos}</option>)}</select></td>
@@ -270,7 +279,7 @@ function PeopleSection({ title, rows, group, onAdd, onRemove, onMove, onUpdate, 
         {group === 'internal' ? <td><div className="mini"><button className={row.counted ? 'on' : ''} onClick={() => onUpdate(group, row.id, { counted: true })}>계상</button><button className={!row.counted ? 'on' : ''} onClick={() => onUpdate(group, row.id, { counted: false })}>미계상</button></div></td> : null}
         <td className={group === 'internal' && !row.counted ? 'muted amount' : 'amount'}>{formatNumber(rowAmount(row))}</td>
         <td><div className="icon-row"><button onClick={() => onMove(group, row.id, -1)}>↑</button><button onClick={() => onMove(group, row.id, 1)}>↓</button></div></td>
-        <td><button className="danger-text" onClick={() => onRemove(group, row.id)}>삭제</button></td>
+        <td><div className="row-actions"><button className="copy-text" onClick={() => onDuplicate(group, row.id)}>복제</button><button className="danger-text" onClick={() => onRemove(group, row.id)}>삭제</button></div></td>
       </tr>)}</tbody></table></div></section>;
 }
 
