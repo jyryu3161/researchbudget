@@ -16,23 +16,7 @@ import {
 } from './calculator';
 import './styles.css';
 
-const initialYears: BudgetYear[] = [
-  newYear('1차년도', {
-    totalRaw: '110000',
-    rateRaw: '26.09',
-    allowanceRateRaw: '20',
-    vat: false,
-    basis: 'direct',
-    internal: [
-      { id: 1, name: '이찬희', base: '800', months: '9', counted: true },
-      { id: 2, name: '류재용', base: '2400', months: '9', counted: false },
-    ],
-    external: [],
-    student: [{ id: 3, name: '홍길동', base: '2000', months: '9' }],
-    activityRaw: '15000',
-    materialRaw: '10000',
-  }),
-];
+const initialYears: BudgetYear[] = [newYear('1차년도')];
 
 const presets = [
   { label: '국가R&D 주관·공동 26.09%', rate: '26.09', vat: false },

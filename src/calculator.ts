@@ -77,8 +77,8 @@ export function newYear(name: string, overrides: Partial<BudgetYear> = {}): Budg
   return {
     name,
     totalRaw: '',
-    rateRaw: '26.09',
-    allowanceRateRaw: '20',
+    rateRaw: '',
+    allowanceRateRaw: '',
     vat: false,
     basis: 'direct',
     internal: [],
